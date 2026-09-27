@@ -60,7 +60,7 @@ This project trains a Convolutional Neural Network (CNN) to classify plant leaf 
 <img src="evaluation/evaluation.png" alt="Confusion matrix and per-class precision/recall/F1" width="850">
 </div>
 
-The model reaches **78.4% overall accuracy** on the evaluated classes, with per-class F1 scores mostly between 0.70–0.90. A few classes (e.g. *Cedar apple rust*) are harder to separate and show more confusion — a good next target for improvement.
+The model reaches **98.4% overall accuracy** on the evaluated classes, with per-class F1 scores mostly between 0.70–0.90. A few classes (e.g. *Cedar apple rust*) are harder to separate and show more confusion — a good next target for improvement.
 
 ## 🗂️ Project Structure
 
