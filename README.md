@@ -61,7 +61,7 @@ flowchart LR
 |---------|-------|
 | Image size | 128 × 128 |
 | Batch size | 32 |
-| Epochs | 15 |
+| Epochs | 10 |
 | Optimizer | Adam |
 | Loss | Sparse categorical cross-entropy |
 | Metric | Accuracy |
