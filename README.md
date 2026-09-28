@@ -1,134 +1,144 @@
-<div align="center">
+# Plant Disease Classification
 
-# 🌿 Plant Disease Classification
+A convolutional neural network (CNN) built with TensorFlow/Keras that classifies plant leaf images into disease categories. The model is trained on the **New Plant Diseases Dataset (Augmented)** image dataset, with one class per sub-folder of the training directory.
 
-**A CNN that identifies plant leaf diseases from images.**
+## How It Works
 
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00?logo=tensorflow&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV-4.x-5C3EE8?logo=opencv&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-planned-FF4B4B?logo=streamlit&logoColor=white)
-![Status](https://img.shields.io/badge/status-in--progress-yellow)
+The training script (`main.py`) does the following:
 
-</div>
+1. Reads every image from the training folder (each sub-folder name is a class label).
+2. Shuffles the file paths, then loads images in batches of 32 using OpenCV.
+3. Resizes each image to **128 x 128** and scales pixel values to the 0-1 range.
+4. Streams the batches into a `tf.data.Dataset` via a generator, so the full dataset is never held in memory.
+5. Trains a CNN for up to **15 epochs**, then saves the model.
 
----
+The number of output classes is not hard-coded. It is computed from the number of class folders in the training directory.
 
-## 📖 Overview
-
-This project trains a Convolutional Neural Network (CNN) to classify plant leaf images as **healthy** or **diseased**, and to identify *which* disease is present. It uses the [New Plant Diseases Dataset](https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset) from Kaggle and a custom TensorFlow/Keras training pipeline.
-
-## 📑 Table of Contents
-
-- [Features](#-features)
-- [Model Architecture](#-model-architecture)
-- [Results](#-results)
-- [Project Structure](#-project-structure)
-- [Installation](#️-installation)
-- [Dataset Setup](#-dataset-setup)
-- [Usage](#-usage)
-- [Roadmap](#-roadmap)
-- [Author](#-author)
-- [License](#-license)
-
-## ✨ Features
-
-- Custom data-loading pipeline (`tf.data.Dataset` generator) that streams and batches images instead of loading the full dataset into memory
-- CNN built with Keras `Sequential` for multi-class leaf disease classification
-- Training safeguards: `EarlyStopping`, `ModelCheckpoint`, and `ReduceLROnPlateau`
-- Evaluation with a confusion matrix and per-class precision / recall / F1
-- Managed with [`uv`](https://github.com/astral-sh/uv) (`pyproject.toml` + `uv.lock`), with a plain `requirements.txt` as a fallback
-
-## 🧠 Model Architecture
+## Model Architecture
 
 | Layer | Details |
-|---|---|
-| Input | 128 × 128 × 3 |
-| Conv2D + MaxPool | 32 filters, 3×3, ReLU |
-| Conv2D + MaxPool | 64 filters, 3×3, ReLU |
-| Conv2D + MaxPool | 128 filters, 3×3, ReLU |
-| Flatten | — |
+|-------|---------|
+| Input | 128 x 128 x 3 |
+| Conv2D + MaxPooling2D | 32 filters, 3x3, ReLU, `same` padding, 2x2 pool |
+| Conv2D + MaxPooling2D | 64 filters, 3x3, ReLU, `same` padding, 2x2 pool |
+| Conv2D + MaxPooling2D | 128 filters, 3x3, ReLU, `same` padding, 2x2 pool |
+| Flatten | - |
 | Dense | 256 units, ReLU |
 | Dropout | 0.5 |
-| Dense (output) | `num_classes`, Softmax |
+| Dense (output) | one unit per class, Softmax |
 
-**Training config:** Adam optimizer · sparse categorical cross-entropy · batch size 32 · up to 15 epochs (early-stopped on validation loss).
+**Compile settings:** Adam optimizer, `sparse_categorical_crossentropy` loss, accuracy metric.
 
-## 📊 Results
+## Training Configuration
 
-<div align="center">
-<img src="evaluation/evaluation.png" alt="Confusion matrix and per-class precision/recall/F1" width="850">
-</div>
+| Parameter | Value |
+|-----------|-------|
+| Image size | 128 x 128 |
+| Batch size | 32 |
+| Epochs | 15 |
+| Random seed | 42 |
 
-The model reaches **98.4% overall accuracy** on the evaluated classes, with per-class F1 scores mostly between 0.70–0.90. A few classes (e.g. *Cedar apple rust*) are harder to separate and show more confusion — a good next target for improvement.
+Callbacks defined in the script: `EarlyStopping` (monitors `val_loss`, patience 5), `ModelCheckpoint` (saves the best model to `best_plant_disease_model.keras`), and `ReduceLROnPlateau` (halves the learning rate, patience 3).
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 Plant-Disease-Classification/
-├── data/
-│   └── data.txt                     # where to get and place the dataset
-├── evaluation/
-│   └── evaluation.png               # confusion matrix + metrics
-├── src/plant_disease_classification/
-│   └── __init__.py                  # package entry point (scaffold)
-├── main.py                          # data pipeline, model, training loop
-├── best_plant_disease_model.keras   # best checkpoint (val_accuracy)
-├── model.keras / model.h5           # final trained model
-├── pyproject.toml / uv.lock         # uv-managed dependencies
-├── requirements.txt                 # pip fallback
-└── README.md
+├── data/                              # Dataset location (Kaggle download extracted here)
+├── evaluation/                        # Evaluation-related files
+├── src/plant_disease_classification/  # Python package (project entry point)
+├── back.ipynb                         # Jupyter notebook
+├── main.py                            # Data loading, model definition and training
+├── best_plant_disease_model.keras     # Checkpoint saved by ModelCheckpoint
+├── plant_disease_model.keras          # Saved model
+├── model.keras                        # Final model (Keras format)
+├── model.h5                           # Final model (HDF5 format)
+├── pyproject.toml                     # Project metadata and dependencies
+├── requirements.txt                   # pip-style dependency list
+├── uv.lock                            # Locked dependencies for uv
+└── .python-version                    # Python version for the project
 ```
 
-## ⚙️ Installation
+## Tech Stack
+
+- **Python** 3.11 or newer
+- **TensorFlow / Keras**: model building and training
+- **OpenCV**: image loading and resizing
+- **NumPy, Pandas**: data handling
+- **scikit-learn, Matplotlib, Seaborn**: evaluation and plotting
+- **Pillow**: image handling
+- **Streamlit**: listed as a dependency
+- **Kaggle API**: dataset download
+- **uv**: package management (`pyproject.toml` and `uv.lock`)
+- **Ruff**: linting
+
+## Getting Started
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/himanshuchandrakar465/Plant-Disease-Classification.git
 cd Plant-Disease-Classification
+```
 
-# Option A — uv (recommended, matches pyproject.toml/uv.lock)
+### 2. Install dependencies
+
+Using **uv** (recommended, since the project ships a `uv.lock`):
+
+```bash
 uv sync
+```
 
-# Option B — pip
+Or using **pip**:
+
+```bash
 pip install -r requirements.txt
 ```
 
-## 📦 Dataset Setup
+### 3. Get the dataset
 
-The dataset isn't bundled in the repo. Get it from Kaggle:
+The training script expects the dataset at this path (Windows-style, relative to the project root):
 
-```bash
-kaggle datasets download -d vipoooool/new-plant-diseases-dataset -p data --unzip
+```
+data\archive\New Plant Diseases Dataset(Augmented)\New Plant Diseases Dataset(Augmented)\train
 ```
 
-or download it manually from the [Kaggle page](https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset) and place it under `data/`.
+Download the **New Plant Diseases Dataset (Augmented)** from Kaggle (for example with the Kaggle API, which is included in the dependencies) and extract it into `data/archive/` so the folder layout matches the path above. Each sub-folder of `train` must be one class containing that class's images.
 
-> **Note:** `main.py` currently points to a hardcoded Windows-style path for the training folder — update the `folder` variable at the top of the script to match where you extract the dataset.
-
-## 🚀 Usage
-
-**Train the model:**
+### 4. Train the model
 
 ```bash
 python main.py
 ```
 
-This streams images in batches, trains the CNN, and saves:
-- `best_plant_disease_model.keras` — best checkpoint by validation accuracy
-- `model.keras` / `model.h5` — final model after training
+When training finishes, the model is saved as `model.keras` and `model.h5`.
 
-## 🛣️ Roadmap
+## Loading a Trained Model
 
-- [ ] Wire up the Streamlit app for interactive leaf-image predictions (dependency is already in place, UI isn't built yet)
-- [ ] Make the dataset path OS-independent (`pathlib` instead of hardcoded `\\` splits)
-- [ ] Add a proper `predict.py` / inference script
-- [ ] Expand evaluation to the full class set and log training curves
+```python
+import cv2
+import numpy as np
+import tensorflow as tf
 
-## 👤 Author
+model = tf.keras.models.load_model("model.keras")
 
-**Himanshu Chandrakar** — aspiring AI/ML engineer working on deep learning and generative AI (PyTorch, TensorFlow, transformers, GANs).
-[GitHub @himanshuchandrakar465](https://github.com/himanshuchandrakar465)
+img = cv2.imread("leaf.jpg")
+img = cv2.resize(img, (128, 128)) / 255.0
+pred = model.predict(np.expand_dims(img, axis=0))
+class_index = int(np.argmax(pred))
+```
 
-## 📄 License
+Class indices follow the order in which `main.py` lists the class folders. Keep the same dataset folders to map an index back to its class name.
 
-No license has been added yet — until one is, all rights are reserved by default. Open an issue or reach out before reusing this code.
+## Notes and Known Limitations
+
+These come from reading the current code and are worth knowing before you build on it:
+
+- **Callbacks are not applied.** `main.py` builds the callbacks list, but `cnn.fit()` is called without passing it, and no validation data is supplied. As written, early stopping, checkpointing and learning-rate reduction do not run during training.
+- **No reported metrics.** This repository does not include verified accuracy or loss numbers, so none are claimed here. Add your own results after evaluating the model.
+- **Windows-specific paths.** Paths and label parsing use backslashes (`\\`), so the script is written for Windows. On Linux or macOS the path handling needs adjusting.
+- **Streamlit** is installed as a dependency, but no web app file is described in this README.
+
+## Author
+
+**himanshuchandrakar465**
