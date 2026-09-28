@@ -82,10 +82,10 @@ The confusion matrix and metrics for the trained model are saved in [`evaluation
 
 | Metric | Result |
 |--------|--------|
-| Accuracy | _add from evaluation.png_ |
-| Precision | _add from evaluation.png_ |
-| Recall | _add from evaluation.png_ |
-| F1-score | _add from evaluation.png_ |
+| Accuracy | 0.95|
+| Precision | not calculated yet |
+| Recall | 0.90 |
+| F1-score | 0.94 |
 
 ---
 
