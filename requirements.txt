@@ -11,3 +11,4 @@ ruff
 opencv-python
 matplotlib
 seaborn
+ipykernel
