@@ -1,80 +1,121 @@
-# Plant Disease Classification
+<div align="center">
 
-A convolutional neural network (CNN) built with TensorFlow/Keras that classifies plant leaf images into disease categories. The model is trained on the **New Plant Diseases Dataset (Augmented)** image dataset, with one class per sub-folder of the training directory.
+# 🌿 Plant Disease Classification
 
-## How It Works
+**A CNN that looks at a leaf photo and tells you whether the plant is healthy or which disease it has.**
 
-The training script (`main.py`) does the following:
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-Keras-FF6F00?logo=tensorflow&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-Image%20Processing-5C3EE8?logo=opencv&logoColor=white)
+![uv](https://img.shields.io/badge/managed%20with-uv-DE5FE9)
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
 
-1. Reads every image from the training folder (each sub-folder name is a class label).
-2. Shuffles the file paths, then loads images in batches of 32 using OpenCV.
-3. Resizes each image to **128 x 128** and scales pixel values to the 0-1 range.
-4. Streams the batches into a `tf.data.Dataset` via a generator, so the full dataset is never held in memory.
-5. Trains a CNN for up to **15 epochs**, then saves the model.
+</div>
 
-The number of output classes is not hard-coded. It is computed from the number of class folders in the training directory.
+---
 
-## Model Architecture
+## 📖 Overview
 
-| Layer | Details |
-|-------|---------|
-| Input | 128 x 128 x 3 |
-| Conv2D + MaxPooling2D | 32 filters, 3x3, ReLU, `same` padding, 2x2 pool |
-| Conv2D + MaxPooling2D | 64 filters, 3x3, ReLU, `same` padding, 2x2 pool |
-| Conv2D + MaxPooling2D | 128 filters, 3x3, ReLU, `same` padding, 2x2 pool |
-| Flatten | - |
-| Dense | 256 units, ReLU |
-| Dropout | 0.5 |
-| Dense (output) | one unit per class, Softmax |
+Plant diseases reduce crop yield, and catching them early matters. This project trains a **Convolutional Neural Network (CNN)** on labelled leaf images from the Kaggle **New Plant Diseases Dataset (Augmented)**. Every sub-folder of the training directory is one class, and the model predicts which class a new leaf image belongs to.
 
-**Compile settings:** Adam optimizer, `sparse_categorical_crossentropy` loss, accuracy metric.
+**Highlights**
 
-## Training Configuration
+- 🧠 Custom 3-block CNN built with TensorFlow / Keras
+- 🌊 Memory-friendly `tf.data` generator pipeline that streams images in batches instead of loading the whole dataset
+- 🔢 Number of classes is detected automatically from the dataset folders
+- 💾 Trained models exported in both `.keras` and `.h5` formats
+- 📊 Confusion matrix and metrics stored in `evaluation/`
 
-| Parameter | Value |
-|-----------|-------|
-| Image size | 128 x 128 |
+---
+
+## 🔄 Pipeline
+
+```mermaid
+flowchart LR
+    A[Leaf images<br/>one folder per class] --> B[Shuffle paths]
+    B --> C[Load batch<br/>OpenCV]
+    C --> D[Resize 128x128<br/>Scale to 0-1]
+    D --> E[CNN]
+    E --> F[Softmax<br/>class probabilities]
+    F --> G[model.keras / model.h5]
+```
+
+---
+
+## 🏗️ Model Architecture
+
+| # | Layer | Details |
+|---|-------|---------|
+| 1 | Input | 128 × 128 × 3 |
+| 2 | Conv2D + MaxPool | 32 filters, 3×3, ReLU, same padding, 2×2 pool |
+| 3 | Conv2D + MaxPool | 64 filters, 3×3, ReLU, same padding, 2×2 pool |
+| 4 | Conv2D + MaxPool | 128 filters, 3×3, ReLU, same padding, 2×2 pool |
+| 5 | Flatten | |
+| 6 | Dense | 256 units, ReLU |
+| 7 | Dropout | rate 0.5 |
+| 8 | Dense (output) | one unit per class, Softmax |
+
+### ⚙️ Training setup
+
+| Setting | Value |
+|---------|-------|
+| Image size | 128 × 128 |
 | Batch size | 32 |
 | Epochs | 15 |
-| Random seed | 42 |
+| Optimizer | Adam |
+| Loss | Sparse categorical cross-entropy |
+| Metric | Accuracy |
+| Seed | 42 |
+| Callbacks defined | EarlyStopping (`val_loss`, patience 5), ModelCheckpoint (`best_plant_disease_model.keras`), ReduceLROnPlateau (factor 0.5, patience 3) |
 
-Callbacks defined in the script: `EarlyStopping` (monitors `val_loss`, patience 5), `ModelCheckpoint` (saves the best model to `best_plant_disease_model.keras`), and `ReduceLROnPlateau` (halves the learning rate, patience 3).
+---
 
-## Project Structure
+## 📊 Evaluation
 
-```
+The confusion matrix and metrics for the trained model are saved in [`evaluation/evaluation.png`](evaluation/evaluation.png).
+
+<div align="center">
+
+<img src="evaluation/evaluation.png" alt="Confusion matrix and evaluation metrics" width="90%">
+
+</div>
+
+| Metric | Result |
+|--------|--------|
+| Accuracy | _add from evaluation.png_ |
+| Precision | _add from evaluation.png_ |
+| Recall | _add from evaluation.png_ |
+| F1-score | _add from evaluation.png_ |
+
+---
+
+## 📁 Project Structure
+
+```text
 Plant-Disease-Classification/
-├── data/                              # Dataset location (Kaggle download extracted here)
-├── evaluation/                        # Evaluation-related files
-├── src/plant_disease_classification/  # Python package (project entry point)
-├── back.ipynb                         # Jupyter notebook
-├── main.py                            # Data loading, model definition and training
-├── best_plant_disease_model.keras     # Checkpoint saved by ModelCheckpoint
-├── plant_disease_model.keras          # Saved model
-├── model.keras                        # Final model (Keras format)
-├── model.h5                           # Final model (HDF5 format)
-├── pyproject.toml                     # Project metadata and dependencies
-├── requirements.txt                   # pip-style dependency list
-├── uv.lock                            # Locked dependencies for uv
-└── .python-version                    # Python version for the project
+├── data/
+│   └── data.txt                        # Where to get and place the dataset
+├── evaluation/
+│   └── evaluation.png                  # Confusion matrix + metrics
+├── src/plant_disease_classification/
+│   └── __init__.py                     # Package entry point (scaffold)
+├── back.ipynb                          # Jupyter notebook
+├── main.py                             # Data pipeline, model and training
+├── best_plant_disease_model.keras      # Best checkpoint
+├── plant_disease_model.keras           # Saved model
+├── model.keras                         # Final model (Keras format)
+├── model.h5                            # Final model (HDF5 format)
+├── pyproject.toml                      # Project metadata and dependencies
+├── uv.lock                             # Locked dependencies (uv)
+├── requirements.txt                    # pip fallback
+└── .python-version
 ```
 
-## Tech Stack
+---
 
-- **Python** 3.11 or newer
-- **TensorFlow / Keras**: model building and training
-- **OpenCV**: image loading and resizing
-- **NumPy, Pandas**: data handling
-- **scikit-learn, Matplotlib, Seaborn**: evaluation and plotting
-- **Pillow**: image handling
-- **Streamlit**: listed as a dependency
-- **Kaggle API**: dataset download
-- **uv**: package management (`pyproject.toml` and `uv.lock`)
-- **Ruff**: linting
+## 🚀 Getting Started
 
-## Getting Started
-
-### 1. Clone the repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/himanshuchandrakar465/Plant-Disease-Classification.git
@@ -83,37 +124,41 @@ cd Plant-Disease-Classification
 
 ### 2. Install dependencies
 
-Using **uv** (recommended, since the project ships a `uv.lock`):
-
 ```bash
+# Option A: uv (recommended, matches pyproject.toml and uv.lock)
 uv sync
-```
 
-Or using **pip**:
-
-```bash
+# Option B: pip
 pip install -r requirements.txt
 ```
 
-### 3. Get the dataset
+### 3. Download the dataset
 
-The training script expects the dataset at this path (Windows-style, relative to the project root):
+The dataset is not bundled in the repository. Download it from Kaggle (requires a configured [Kaggle API token](https://www.kaggle.com/docs/api)):
 
+```bash
+kaggle datasets download -d vipoooool/new-plant-diseases-dataset -p data --unzip
 ```
-data\archive\New Plant Diseases Dataset(Augmented)\New Plant Diseases Dataset(Augmented)\train
-```
 
-Download the **New Plant Diseases Dataset (Augmented)** from Kaggle (for example with the Kaggle API, which is included in the dependencies) and extract it into `data/archive/` so the folder layout matches the path above. Each sub-folder of `train` must be one class containing that class's images.
+Or download it manually from the Kaggle page and place it under `data/`.
 
-### 4. Train the model
+### 4. Train
 
 ```bash
 python main.py
 ```
 
-When training finishes, the model is saved as `model.keras` and `model.h5`.
+`main.py` reads the training folder from the `folder` variable at the top of the script. It is currently a Windows-style path:
 
-## Loading a Trained Model
+```text
+data\archive\New Plant Diseases Dataset(Augmented)\New Plant Diseases Dataset(Augmented)\train
+```
+
+Update it to match where you extracted the dataset. Training saves `model.keras` and `model.h5`.
+
+---
+
+## 🔮 Using a Trained Model
 
 ```python
 import cv2
@@ -124,21 +169,47 @@ model = tf.keras.models.load_model("model.keras")
 
 img = cv2.imread("leaf.jpg")
 img = cv2.resize(img, (128, 128)) / 255.0
-pred = model.predict(np.expand_dims(img, axis=0))
-class_index = int(np.argmax(pred))
+
+probs = model.predict(np.expand_dims(img, axis=0))
+class_index = int(np.argmax(probs))
+print("Predicted class index:", class_index)
 ```
 
-Class indices follow the order in which `main.py` lists the class folders. Keep the same dataset folders to map an index back to its class name.
+Class indices follow the order in which `main.py` lists the class folders in the training directory.
 
-## Notes and Known Limitations
+---
 
-These come from reading the current code and are worth knowing before you build on it:
+## 🧰 Tech Stack
 
-- **Callbacks are not applied.** `main.py` builds the callbacks list, but `cnn.fit()` is called without passing it, and no validation data is supplied. As written, early stopping, checkpointing and learning-rate reduction do not run during training.
-- **No reported metrics.** This repository does not include verified accuracy or loss numbers, so none are claimed here. Add your own results after evaluating the model.
-- **Windows-specific paths.** Paths and label parsing use backslashes (`\\`), so the script is written for Windows. On Linux or macOS the path handling needs adjusting.
-- **Streamlit** is installed as a dependency, but no web app file is described in this README.
+| Area | Tools |
+|------|-------|
+| Deep learning | TensorFlow, Keras |
+| Image processing | OpenCV, Pillow |
+| Data and evaluation | NumPy, Pandas, scikit-learn |
+| Visualization | Matplotlib, Seaborn |
+| Dataset access | Kaggle API |
+| App (planned) | Streamlit |
+| Tooling | uv, Ruff, Jupyter (ipykernel) |
 
-## Author
+---
 
-**himanshuchandrakar465**
+## 🗺️ Roadmap
+
+- [ ] Build the Streamlit app for interactive leaf-image predictions (dependency is installed, UI not built yet)
+- [ ] Make dataset paths OS-independent using `pathlib` instead of hard-coded `\\` splits
+- [ ] Pass the defined callbacks and a validation set to `fit()` so early stopping and checkpointing take effect
+- [ ] Add a license
+
+---
+
+## 👤 Author
+
+**Himanshu Chandrakar** · [@himanshuchandrakar465](https://github.com/himanshuchandrakar465)
+
+---
+
+<div align="center">
+
+⭐ If you find this project useful, consider giving it a star.
+
+</div>
